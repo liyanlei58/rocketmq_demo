@@ -1,4 +1,4 @@
-package com.lyl.mq.synchronous;
+package com.lyl.mq.simple;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -12,11 +12,13 @@ public class SyncProducer {
     public static void main(String[] args) throws Exception {
         //Instantiate with a producer group name.
         DefaultMQProducer producer = new DefaultMQProducer("syncProducerGroup1");
+        producer.setNamesrvAddr("127.0.0.1:9876");
+        producer.setInstanceName("SyncProducer");
         //Launch the instance.
         producer.start();
         for (int i = 0; i < 100; i++) {
             //Create a message instance, specifying topic, tag and message body.
-            Message msg = new Message("TopicTest" /* Topic */,
+            Message msg = new Message("TopicTest1" /* Topic */,
                 "TagA" /* Tag */,
                 ("SyncProducer Hello RocketMQ " +
                     i).getBytes(RemotingHelper.DEFAULT_CHARSET) /* Message body */

@@ -1,4 +1,4 @@
-package com.lyl.mq;
+package com.lyl.mq.test;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -10,7 +10,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import java.util.List;
 
 
-public class ThreeWayConsumer {
+public class PushConsumer {
     /**
      * 当前例子是PushConsumer用法，使用方式给用户感觉是消息从RocketMQ服务器推到了应用客户端。<br>
      * 但是实际PushConsumer内部是使用长轮询Pull方式从MetaQ服务器拉消息，然后再回调用户Listener方法<br>
@@ -22,14 +22,14 @@ public class ThreeWayConsumer {
          * 注意：ConsumerGroupName需要由应用来保证唯一
          */
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(
-                "ThreeWayConsumerGroup");
+                "ConsumerGroupName");
         consumer.setNamesrvAddr("127.0.0.1:9876");
         consumer.setInstanceName("Consumber");
 
         /**
          * 订阅指定topic下tags分别等于TagA或TagC或TagD
          */
-        consumer.subscribe("TopicTest", "TagA || TagC || TagD");
+        consumer.subscribe("TopicTest1", "TagA || TagC || TagD");
         /**
          * 订阅指定topic下所有消息<br>
          * 注意：一个consumer对象可以订阅多个topic
@@ -45,19 +45,16 @@ public class ThreeWayConsumer {
                         + " Receive New Messages: " + msgs.size());
 
                 MessageExt msg = msgs.get(0);
-                if (msg.getTopic().equals("TopicTest")) {
+                if (msg.getTopic().equals("TopicTest1")) {
                     //执行TopicTest1的消费逻辑
-                    if (msg.getTags() != null && "TagA".equals(msg.getTags())) {
-                        //执行TagA的消费
-                        System.out.println(new String(msg.getBody()));
-                    } else if (msg.getTags() != null
-                            && msg.getTags().equals("TagC")) {
-                        //执行TagC的消费
-                        System.out.println(new String(msg.getBody()));
-                    } else if (msg.getTags() != null
-                            && msg.getTags().equals("TagD")) {
-                        //执行TagD的消费
-                        System.out.println(new String(msg.getBody()));
+                    if(msg.getTags() != null){
+                        if("TagA".equals(msg.getTags())){//执行TagA的消费
+                            System.out.println(new String(msg.getBody()));
+                        }else if ("TagC".equals(msg.getTags())){//执行TagC的消费
+                            System.out.println(new String(msg.getBody()));
+                        }else if ("TagD".equals(msg.getTags())){//执行TagD的消费
+                            System.out.println(new String(msg.getBody()));
+                        }
                     }
                 } else if (msg.getTopic().equals("TopicTest2")) {
                     System.out.println(new String(msg.getBody()));

@@ -1,4 +1,4 @@
-package com.lyl.mq;
+package com.lyl.mq.simple;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -10,7 +10,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import java.util.List;
 
 
-public class PushConsumer {
+public class ThreeWayConsumer {
     /**
      * 当前例子是PushConsumer用法，使用方式给用户感觉是消息从RocketMQ服务器推到了应用客户端。<br>
      * 但是实际PushConsumer内部是使用长轮询Pull方式从MetaQ服务器拉消息，然后再回调用户Listener方法<br>
@@ -21,8 +21,7 @@ public class PushConsumer {
          * 一个应用创建一个Consumer，由应用来维护此对象，可以设置为全局对象或者单例<br>
          * 注意：ConsumerGroupName需要由应用来保证唯一
          */
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(
-                "ConsumerGroupName");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("ThreeWayConsumerGroup");
         consumer.setNamesrvAddr("127.0.0.1:9876");
         consumer.setInstanceName("Consumber");
 
@@ -40,36 +39,32 @@ public class PushConsumer {
 
             public ConsumeConcurrentlyStatus consumeMessage(
                     List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-
-                System.out.println(Thread.currentThread().getName()
-                        + " Receive New Messages: " + msgs.size());
-
+                System.out.println(Thread.currentThread().getName() + " Receive New Messages: " + msgs.size());
                 MessageExt msg = msgs.get(0);
-                if (msg.getTopic().equals("TopicTest1")) {
+                if (msg.getTopic().equals("TopicTest")) {
                     //执行TopicTest1的消费逻辑
-                    if(msg.getTags() != null){
-                        if("TagA".equals(msg.getTags())){//执行TagA的消费
-                            System.out.println(new String(msg.getBody()));
-                        }else if ("TagC".equals(msg.getTags())){//执行TagC的消费
-                            System.out.println(new String(msg.getBody()));
-                        }else if ("TagD".equals(msg.getTags())){//执行TagD的消费
-                            System.out.println(new String(msg.getBody()));
-                        }
+                    if (msg.getTags() != null && "TagA".equals(msg.getTags())) {
+                        //执行TagA的消费
+                        System.out.println(new String(msg.getBody()));
+                    } else if (msg.getTags() != null
+                            && msg.getTags().equals("TagC")) {
+                        //执行TagC的消费
+                        System.out.println(new String(msg.getBody()));
+                    } else if (msg.getTags() != null
+                            && msg.getTags().equals("TagD")) {
+                        //执行TagD的消费
+                        System.out.println(new String(msg.getBody()));
                     }
                 } else if (msg.getTopic().equals("TopicTest2")) {
                     System.out.println(new String(msg.getBody()));
                 }
-
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-
             }
         });
-
         /**
          * Consumer对象在使用之前必须要调用start初始化，初始化一次即可<br>
          */
         consumer.start();
-
         System.out.println("ConsumerStarted.");
     }
 }  

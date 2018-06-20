@@ -1,4 +1,4 @@
-package com.lyl.mq;
+package com.lyl.mq.test;
 
 import java.util.concurrent.TimeUnit;
 
